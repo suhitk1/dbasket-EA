@@ -648,6 +648,12 @@ void OnTick()
       {
          signal = g_signalEngine.CheckEntrySignal(corrData, false, signalFailReason);
       }
+      else
+      {
+         // Pre-filters failed but signal wasn't set - ensure we have a reason
+         if(signalFailReason == "")
+            signalFailReason = "Pre-filter blocked entry signal";
+      }
       
       if(signal != SIGNAL_NONE)
       {
@@ -680,10 +686,14 @@ void OnTick()
                           " bars (max hold: " + IntegerToString(g_halfLifeEngine.GetMaxHoldingBars()) + ")");
          }
       }
-      else if(signalFailReason != "" && g_tickCount % 1000 == 0)
+      else if(signal == SIGNAL_NONE)
       {
          g_riskManager.RecordSignal(false);
-         Logger.Debug("Signal blocked: " + signalFailReason);
+         // Log the reason, but with more detail on what failed
+         if(signalFailReason != "" && g_tickCount % 100 == 0)
+         {
+            Logger.Debug("Signal blocked: " + signalFailReason);
+         }
       }
    }
    
